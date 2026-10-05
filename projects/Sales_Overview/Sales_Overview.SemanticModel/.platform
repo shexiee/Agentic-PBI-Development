@@ -1,11 +1,11 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
   "metadata": {
-    "type": "Report",
-    "displayName": "MCP_Visual_Test"
+    "type": "SemanticModel",
+    "displayName": "Sales_Overview"
   },
   "config": {
     "version": "2.0",
-    "logicalId": "31284288-b5b4-4382-9354-013f319a8a2c"
+    "logicalId": "1f74cc68-7aa0-49ce-95f7-ba4ef28cc1ef"
   }
 }

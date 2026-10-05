@@ -3,7 +3,7 @@
   "version": "4.0",
   "datasetReference": {
     "byPath": {
-      "path": "../MCP_Visual_Test.SemanticModel"
+      "path": "../Sales_Overview.SemanticModel"
     }
   }
 }
