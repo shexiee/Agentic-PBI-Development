@@ -1,0 +1,135 @@
+{
+  "name": "ExecutiveTheme-dbe0b292.json",
+  "dataColors": [
+    "#3B4FE0",
+    "#0F7B6C",
+    "#D64550",
+    "#6B7280",
+    "#93A5FD",
+    "#8FD9C4",
+    "#1F2937",
+    "#9CA3AF"
+  ],
+  "background": "#F7F8FA",
+  "foreground": "#1F2937",
+  "tableAccent": "#3B4FE0",
+  "good": "#0F7B6C",
+  "neutral": "#6B7280",
+  "bad": "#D64550",
+  "textClasses": {
+    "callout": {
+      "fontSize": 28,
+      "fontFace": "Segoe UI Semibold",
+      "color": "#1F2937"
+    },
+    "title": {
+      "fontSize": 13,
+      "fontFace": "Segoe UI Semibold",
+      "color": "#1F2937"
+    },
+    "label": {
+      "fontSize": 11,
+      "fontFace": "Segoe UI",
+      "color": "#6B7280"
+    },
+    "header": {
+      "fontSize": 10,
+      "fontFace": "Segoe UI Semibold",
+      "color": "#1F2937"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "border": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#ECECEC"
+              }
+            },
+            "radius": 10
+          }
+        ],
+        "padding": [
+          {
+            "top": 12,
+            "bottom": 12,
+            "left": 12,
+            "right": 12
+          }
+        ],
+        "background": [
+          {
+            "color": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            },
+            "transparency": 0
+          }
+        ]
+      }
+    },
+    "cardVisual": {
+      "*": {
+        "outline": [
+          {
+            "show": false,
+            "$id": "default"
+          }
+        ],
+        "value": [
+          {
+            "bold": true,
+            "$id": "default"
+          }
+        ],
+        "label": [
+          {
+            "show": true,
+            "$id": "default"
+          }
+        ]
+      }
+    },
+    "slicer": {
+      "*": {
+        "header": [
+          {
+            "fontFamily": "Segoe UI Semibold",
+            "textSize": 10,
+            "fontColor": {
+              "solid": {
+                "color": "#1F2937"
+              }
+            }
+          }
+        ],
+        "items": [
+          {
+            "fontFamily": "Segoe UI",
+            "textSize": 9,
+            "fontColor": {
+              "solid": {
+                "color": "#1F2937"
+              }
+            },
+            "padding": 2
+          }
+        ]
+      }
+    },
+    "tableEx": {
+      "*": {
+        "columnHeaders": [
+          {
+            "autoSizeColumnWidth": true,
+            "columnAdjustment": "growToFit"
+          }
+        ]
+      }
+    }
+  }
+}
