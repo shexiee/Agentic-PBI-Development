@@ -1,0 +1,129 @@
+table Sales
+	lineageTag: 91e68ba8-f0a4-43e1-a452-0c96fc8f69ec
+
+	/// Total revenue from sales, calculated as Quantity multiplied by Unit Price, summed across all rows.
+	measure 'Total Sales' = SUMX('Sales', 'Sales'[Quantity] * 'Sales'[UnitPrice])
+		formatString: $#,##0.00
+		lineageTag: 6f2f32d2-cd52-4c6d-8980-0fe9e91f9c44
+
+	/// Total cost of goods sold, calculated as Quantity multiplied by Unit Cost, summed across all rows.
+	measure 'Total Cost' = SUMX('Sales', 'Sales'[Quantity] * 'Sales'[UnitCost])
+		formatString: $#,##0.00
+		lineageTag: c1ebdf4f-3798-4dac-8fac-35cd4f696eac
+
+	/// Gross profit, calculated as Total Sales minus Total Cost.
+	measure 'Gross Profit' = [Total Sales] - [Total Cost]
+		formatString: $#,##0.00
+		lineageTag: 2cd85b3b-2d29-4e9b-967a-416ebea6934f
+
+	/// Gross margin percentage, calculated as Gross Profit divided by Total Sales, expressed as a percentage.
+	measure 'Gross Margin %' = DIVIDE([Gross Profit], [Total Sales])
+		formatString: 0.00%
+		lineageTag: f5d4ac9d-559f-4065-bd24-942894658b0e
+
+	/// Total units sold, summed across all rows.
+	measure 'Total Quantity' = SUM(Sales[Quantity])
+		formatString: #,##0
+		lineageTag: 8c3ff08b-d69f-493a-a9c1-fbb713d7c72f
+
+	/// Average revenue per unit sold.
+	measure 'Average Selling Price' = DIVIDE([Total Sales], [Total Quantity])
+		formatString: $#,##0.00
+		lineageTag: 5581fb0e-14ea-45f4-9133-97ce622a16e5
+
+	/// Total Sales for the prior month period, for period-over-period comparison.
+	measure 'Sales Previous Period' = CALCULATE([Total Sales], DATEADD(Sales[Date], -1, MONTH))
+		formatString: $#,##0.00
+		lineageTag: 8088b2b6-3dd1-4644-a996-8a3c6c3ebd1b
+
+	/// Percentage change in Total Sales versus the previous period.
+	measure 'Sales Growth %' = DIVIDE([Total Sales] - [Sales Previous Period], [Sales Previous Period])
+		formatString: ▲ 0.0%;▼ 0.0%;0.0%
+		lineageTag: 0e2557ff-c139-45f5-a1d0-c41c34a78e65
+
+	/// The product with the highest Total Sales in the current filter context.
+	measure 'Best Performing Product' = VAR t = TOPN(1, VALUES(Sales[Product]), [Total Sales], DESC) RETURN CONCATENATEX(t, Sales[Product])
+		lineageTag: fc3dbdab-7898-4b29-b21d-a39e23f047fa
+
+	/// The region with the highest Total Sales in the current filter context.
+	measure 'Best Performing Region' = VAR t = TOPN(1, VALUES(Sales[Region]), [Total Sales], DESC) RETURN CONCATENATEX(t, Sales[Region])
+		lineageTag: 14eca3ab-f087-42a4-89bb-78e6172018bd
+
+	/// 1 when the current Product filter context matches the best-performing product; used to highlight the leader in charts.
+	measure 'Is Top Product' = IF(SELECTEDVALUE(Sales[Product]) = [Best Performing Product], 1, 0)
+		formatString: 0
+		isHidden
+		lineageTag: 45e52c54-b9dc-426d-9b8f-e98417e89865
+
+	column Date
+		dataType: dateTime
+		formatString: mmmm d\, yyyy
+		lineageTag: adc533be-ea9b-40c0-ba06-ddb2817c3ae2
+		summarizeBy: none
+		sourceColumn: Date
+
+		variation Variation
+			isDefault
+			relationship: f11df2ed-8ae1-4781-84d0-c2cd2e933157
+			defaultHierarchy: LocalDateTable_e9ecb90c-9b61-4f0b-b72e-5ae22bb76692.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+		annotation PBI_FormatHint = {"isDateTimeCustom":true}
+
+	column Product
+		dataType: string
+		lineageTag: 2f61cfc6-4c95-4bf7-a1c9-3fe2ddeade37
+		summarizeBy: none
+		sourceColumn: Product
+
+		annotation SummarizationSetBy = Automatic
+
+	column Region
+		dataType: string
+		lineageTag: 804445b3-fc8a-4903-bd71-131737b2e8f9
+		summarizeBy: none
+		sourceColumn: Region
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 60072586-9383-4ee7-a064-27805f49186c
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column UnitPrice
+		dataType: int64
+		formatString: 0
+		lineageTag: d5c6c480-654b-4455-b2d1-f339c5a1cd6a
+		summarizeBy: sum
+		sourceColumn: UnitPrice
+
+		annotation SummarizationSetBy = Automatic
+
+	column UnitCost
+		dataType: int64
+		formatString: 0
+		lineageTag: de87d6d8-3e68-4cb6-b7fa-b0e4568b8105
+		summarizeBy: sum
+		sourceColumn: UnitCost
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Sales = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i45WMjIwMtM1MNQ1MFXSUfJJLCjJLwAy/PKLSjKAtBEQGxoZGAApC1MDpVgdJA0WQEHf/LzMkvwiICs4vxSsA2SMMViDoSWyBiMgAgp6p1Ym5ScWpSDZYQhSbAoijExRNBiiOMk1sbgEpBqXi4x1DUxQXBSeCtZgjMNBxrpGBqgOgnnBAtk9sQA=", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Date = _t, Product = _t, Region = _t, Quantity = _t, UnitPrice = _t, UnitCost = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Date", type date}, {"Product", type text}, {"Region", type text}, {"Quantity", Int64.Type}, {"UnitPrice", Int64.Type}, {"UnitCost", Int64.Type}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+
