@@ -1,0 +1,75 @@
+/// Calendar covering every full year that has sales. Marked as the model's date table.
+table Date
+	lineageTag: 6c898143-6f4a-48cf-b3bc-0fe75ef9240e
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: d mmm yyyy
+		lineageTag: 8bd65b83-a9cd-4638-b008-a804a68cf471
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Date]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year = YEAR('Date'[Date])
+		dataType: int64
+		formatString: 0
+		lineageTag: 36333964-2425-4ead-89ab-6fa13127da9f
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	column Quarter = "Q" & QUARTER('Date'[Date])
+		dataType: string
+		lineageTag: 88a14337-e99f-4f09-8e67-781e95f078da
+		summarizeBy: none
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Month Number' = MONTH('Date'[Date])
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 5055035f-dd1f-4b51-8389-b932943dff27
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	column Month = FORMAT('Date'[Date], "MMM")
+		dataType: string
+		lineageTag: 3be35e4b-bba0-4bd6-8264-a32229ae42e2
+		summarizeBy: none
+		sortByColumn: 'Month Number'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Year Month Number' = YEAR('Date'[Date]) * 100 + MONTH('Date'[Date])
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e805a7eb-1367-4b47-b9ba-c7aae3f7f1be
+		summarizeBy: none
+
+		annotation SummarizationSetBy = User
+
+	column 'Year Month' = FORMAT('Date'[Date], "MMM yyyy")
+		dataType: string
+		lineageTag: 4a0398ca-7968-4cb2-8096-dbb3152c4910
+		summarizeBy: none
+		sortByColumn: 'Year Month Number'
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Date = calculated
+		mode: import
+		source =
+				VAR FirstSale = MIN(Sales[SaleDate])
+				VAR LastSale = MAX(Sales[SaleDate])
+				RETURN
+				    CALENDAR(DATE(YEAR(FirstSale), 1, 1), DATE(YEAR(LastSale), 12, 31))
+

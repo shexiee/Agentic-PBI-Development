@@ -1,0 +1,146 @@
+/// One row per order line: dbo.SaleItems joined to its order header in dbo.Sales.
+table Sales
+	lineageTag: 90b164fc-15ae-44e2-8080-26d16f53ae3f
+
+	/// Revenue from order lines (quantity × unit price).
+	measure Revenue = SUM(Sales[SalesAmount])
+		formatString: $#,##0.00
+		lineageTag: 2a077eed-d0be-4988-8af4-f67f7a6b7295
+
+	/// Number of distinct orders.
+	measure Orders = DISTINCTCOUNT(Sales[SaleId])
+		formatString: #,##0
+		lineageTag: 91165cfb-83cc-42e7-92bc-60c6c2142448
+
+	/// Units sold across all order lines.
+	measure 'Units Sold' = SUM(Sales[Quantity])
+		formatString: #,##0
+		lineageTag: b9f92773-fa76-4935-8878-6c3c74470325
+
+	/// Average revenue per order.
+	measure 'Average Order Value' = DIVIDE([Revenue], [Orders])
+		formatString: $#,##0.00
+		lineageTag: ff2bc8fe-5819-4f58-9fa6-98968fc89e80
+
+	/// Number of customers with at least one order in the current filter context.
+	measure 'Active Customers' = DISTINCTCOUNT(Sales[CustomerId])
+		formatString: #,##0
+		lineageTag: 038ff101-48de-4a0d-ad88-54711b992a46
+
+	/// Revenue for the same period shifted back one month.
+	measure 'Revenue Previous Month' = CALCULATE([Revenue], DATEADD('Date'[Date], -1, MONTH))
+		formatString: $#,##0.00
+		lineageTag: 81c8e753-8bfa-4a8a-9a30-860698d6ad11
+
+	/// Change in Revenue versus the previous month. Blank for periods without revenue.
+	measure 'Revenue MoM %' = IF(NOT ISBLANK([Revenue]), DIVIDE([Revenue] - [Revenue Previous Month], [Revenue Previous Month]))
+		formatString: ▲ 0.0%;▼ 0.0%;0.0%
+		lineageTag: 9f71600c-5a71-4ce4-8389-d6a02e44ddeb
+
+	column SaleItemId
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 6a191e57-57d5-4311-bda5-1562b5ca8f36
+		summarizeBy: none
+		sourceColumn: SaleItemId
+
+		annotation SummarizationSetBy = Automatic
+
+	column SaleId
+		dataType: int64
+		formatString: 0
+		lineageTag: b96e4351-fa10-4951-942e-ece0a9f5d7e0
+		summarizeBy: none
+		sourceColumn: SaleId
+
+		annotation SummarizationSetBy = Automatic
+
+	column SaleDate
+		dataType: dateTime
+		isHidden
+		formatString: d mmm yyyy
+		lineageTag: f7715302-cd95-4f6b-98c8-591aad4f8dfd
+		summarizeBy: none
+		sourceColumn: SaleDate
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column CustomerId
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 71f79c95-0694-480e-b998-9b9ae635a91d
+		summarizeBy: none
+		sourceColumn: CustomerId
+
+		annotation SummarizationSetBy = Automatic
+
+	column ProductId
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 1acb1e43-4039-480b-a118-b89cebc10537
+		summarizeBy: none
+		sourceColumn: ProductId
+
+		annotation SummarizationSetBy = Automatic
+
+	column Quantity
+		dataType: int64
+		isHidden
+		formatString: #,##0
+		lineageTag: 47bf6816-272a-4cb1-8089-3c6cbaff60e3
+		summarizeBy: sum
+		sourceColumn: Quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column UnitPrice
+		dataType: decimal
+		isHidden
+		formatString: $#,##0.00
+		lineageTag: 31456781-1bac-4ef5-ba8e-273db6fa5af3
+		summarizeBy: none
+		sourceColumn: UnitPrice
+
+		annotation SummarizationSetBy = User
+
+	column SalesAmount
+		dataType: decimal
+		isHidden
+		formatString: $#,##0.00
+		lineageTag: 243ad481-8c11-4887-87cb-de3f1b52b736
+		summarizeBy: sum
+		sourceColumn: SalesAmount
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Sales = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(SqlServer, SqlDatabase),
+				    SaleItems = Table.SelectColumns(
+				        Source{[Schema = "dbo", Item = "SaleItems"]}[Data],
+				        {"SaleItemId", "SaleId", "ProductId", "Quantity", "UnitPrice"}
+				    ),
+				    SaleHeaders = Table.SelectColumns(
+				        Source{[Schema = "dbo", Item = "Sales"]}[Data],
+				        {"SaleId", "CustomerId", "SaleDate"}
+				    ),
+				    Joined = Table.NestedJoin(SaleItems, {"SaleId"}, SaleHeaders, {"SaleId"}, "Sale", JoinKind.Inner),
+				    Expanded = Table.ExpandTableColumn(Joined, "Sale", {"CustomerId", "SaleDate"}),
+				    WithAmount = Table.AddColumn(Expanded, "SalesAmount", each [Quantity] * [UnitPrice], Currency.Type),
+				    Typed = Table.TransformColumnTypes(WithAmount, {
+				        {"SaleItemId", Int64.Type}, {"SaleId", Int64.Type}, {"ProductId", Int64.Type},
+				        {"Quantity", Int64.Type}, {"UnitPrice", Currency.Type},
+				        {"CustomerId", Int64.Type}, {"SaleDate", type date}
+				    })
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+

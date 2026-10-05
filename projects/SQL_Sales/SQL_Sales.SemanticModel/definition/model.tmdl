@@ -1,0 +1,22 @@
+model Model
+	culture: en-PH
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-PH
+	valueFilterBehavior: independent
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_QueryOrder = ["SqlServer","SqlDatabase","Sales","Customer","Product"]
+
+annotation PBI_ProTooling = ["DevMode"]
+
+ref table Sales
+ref table Customer
+ref table Product
+ref table Date
+
+ref cultureInfo en-PH
+

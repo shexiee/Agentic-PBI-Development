@@ -1,0 +1,12 @@
+/// SQL Server instance that holds LocalDemoDb. Change this to move the model to another server.
+expression SqlServer = "(localdb)\MSSQLLocalDB" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 28f5e777-7045-4afd-b1e6-61927f53bd13
+
+	annotation PBI_ResultType = Text
+
+/// Database the tables are loaded from.
+expression SqlDatabase = "LocalDemoDb" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: d15eb353-5fb3-4821-b831-2eba3e0e868b
+
+	annotation PBI_ResultType = Text
+

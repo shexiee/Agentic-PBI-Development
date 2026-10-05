@@ -1,0 +1,70 @@
+/// One row per product, from dbo.Products, with a price band for grouping.
+table Product
+	lineageTag: 153c7dc0-a3c8-4e53-a7b7-e22b2f2e155f
+
+	column ProductId
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 7d7271ad-e8f4-4a39-a8a3-b0c93067ac13
+		summarizeBy: none
+		sourceColumn: ProductId
+
+		annotation SummarizationSetBy = Automatic
+
+	column Product
+		dataType: string
+		lineageTag: 04e55d56-0760-4cc2-8c13-e4a033f32849
+		summarizeBy: none
+		sourceColumn: Product
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'List Price'
+		dataType: decimal
+		formatString: $#,##0.00
+		lineageTag: 58e217f5-eb5c-44bd-8787-b29a5d4b8475
+		summarizeBy: none
+		sourceColumn: List Price
+
+		annotation SummarizationSetBy = User
+
+	column 'Price Band'
+		dataType: string
+		lineageTag: 1de8d023-c755-48ea-8305-c9f46a31b340
+		summarizeBy: none
+		sourceColumn: Price Band
+		sortByColumn: 'Price Band Sort'
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Price Band Sort'
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: e4c49575-0117-4a57-9239-0f5a8f0ca7d4
+		summarizeBy: none
+		sourceColumn: Price Band Sort
+
+		annotation SummarizationSetBy = User
+
+	partition Product = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(SqlServer, SqlDatabase),
+				    Products = Table.SelectColumns(
+				        Source{[Schema = "dbo", Item = "Products"]}[Data],
+				        {"ProductId", "ProductName", "UnitPrice"}
+				    ),
+				    Renamed = Table.RenameColumns(Products, {{"ProductName", "Product"}, {"UnitPrice", "List Price"}}),
+				    WithBandSort = Table.AddColumn(Renamed, "Price Band Sort", each
+				        if [List Price] < 50 then 1 else if [List Price] < 150 then 2 else 3, Int64.Type),
+				    WithBand = Table.AddColumn(WithBandSort, "Price Band", each
+				        {"Under $50", "$50 to $149", "$150 and over"}{[Price Band Sort] - 1}, type text),
+				    Typed = Table.TransformColumnTypes(WithBand, {{"ProductId", Int64.Type}, {"Product", type text}, {"List Price", Currency.Type}})
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+

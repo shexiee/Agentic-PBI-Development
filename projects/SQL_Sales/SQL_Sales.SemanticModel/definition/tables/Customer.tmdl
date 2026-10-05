@@ -1,0 +1,47 @@
+/// One row per customer, from dbo.Customers.
+table Customer
+	lineageTag: aa70e43e-3eee-4df4-b372-6d50126a048f
+
+	column CustomerId
+		dataType: int64
+		isHidden
+		formatString: 0
+		lineageTag: 4345a274-902d-4663-8956-66743616721e
+		summarizeBy: none
+		sourceColumn: CustomerId
+
+		annotation SummarizationSetBy = Automatic
+
+	column Customer
+		dataType: string
+		lineageTag: f0c131c7-16e5-48a7-a3c3-970df9ffefd7
+		summarizeBy: none
+		sourceColumn: Customer
+
+		annotation SummarizationSetBy = Automatic
+
+	column City
+		dataType: string
+		lineageTag: c236653d-2297-4703-ae48-c1f95c691f70
+		dataCategory: City
+		summarizeBy: none
+		sourceColumn: City
+
+		annotation SummarizationSetBy = Automatic
+
+	partition Customer = m
+		mode: import
+		source =
+				let
+				    Source = Sql.Database(SqlServer, SqlDatabase),
+				    Customers = Table.SelectColumns(
+				        Source{[Schema = "dbo", Item = "Customers"]}[Data],
+				        {"CustomerId", "CustomerName", "City"}
+				    ),
+				    Renamed = Table.RenameColumns(Customers, {{"CustomerName", "Customer"}}),
+				    Typed = Table.TransformColumnTypes(Renamed, {{"CustomerId", Int64.Type}, {"Customer", type text}, {"City", type text}})
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+
